@@ -1,15 +1,25 @@
 #! /bin/bash
 
 addUser () {
-    echo "hi"
+    useradd -ms $1
+    echo "User $1 added"
 }
 
 modifyUser () {
     echo ...
 }
 
-removeUser () {
+deleteUser () {
     echo ...
+}
+
+showUsersList() {
+    echo ...
+}
+
+generatePassword() {
+    local len=$1
+    echo "Len of pwd: $len"
 }
 
 if [ $# -eq "0" ]
@@ -33,18 +43,35 @@ then
         esac
     done
 else
+
+    echo "Param 2: $2"
     case $1 in
         "add")
-            echo "Mark selected"
+            if [[ -z $2 || $2 == [0-9]* ]]
+            then
+                echo "The username is empty or starts with a number"
+            else
+                addUser
+            fi
             ;;
         "delete")
-            echo "Mark selected"
+            if [[ -z $2 || $2 == [0-9]* ]]
+            then
+                echo "The username is empty or starts with a number"
+            else
+                deleteUser
+            fi
             ;;
         "list")
             echo "Mark selected"
             ;;
         "password")
-            echo "Mark selected"
+            if [[ -z $2 || $2 == *[a-zA-z'!'@#\$%^\&*()_+]* ]]
+            then
+                echo "The password length is not valid"
+            else
+                generatePassword $2
+            fi
             ;;
         *)
             echo "There is not a parameter with the name $1"
