@@ -1,8 +1,26 @@
 #! /bin/bash
 
+# Global Vars
+PASSWORD=""
+
+# Functions
+generatePassword() {
+    local len=$1
+    # echo "Len of pwd: $len"
+    PASSWORD=$(openssl rand -base64 $len)
+    echo "PWD: $PASSWORD"
+}
+
 addUser () {
-    useradd -m -s /bin/bash $1
-    echo "User $1 added"
+    if id "$1" >/dev/null 2>&1;
+    then
+        echo "User alreay exists"
+    else
+        useradd -m -s /bin/bash $1
+        echo "User $1 added"
+        generatePassword 16
+        echo "$1:$PASSWORD" | sudo chpasswd
+    fi
 }
 
 modifyUser () {
@@ -10,7 +28,7 @@ modifyUser () {
 }
 
 deleteUser () {
-    userdel 
+    userdel -r -f $1
 }
 
 showUsersList() {
@@ -26,16 +44,12 @@ showUsersList() {
         IFS=':' read -r -a array <<< "$line"
         local id=${array[2]}
         if [ $id -ge $min -a $id -le $max ]; then
-            echo "User: ${array[0]} | ID: $id | Home dir: ${array[5]}"
+            echo "User: ${array[0]} | ID: $id | GID: ${array[3]} | Home dir: ${array[5]}"
         fi
-    done       
+    done
 }
 
-generatePassword() {
-    local len=$1
-    echo "Len of pwd: $len"
-}
-
+# Main Menu Logic
 if [ $# -eq "0" ]
 then
     select var in "Add User" "Delete User" "Modify User" "Quit"
@@ -76,16 +90,16 @@ else
             then
                 echo "The username is empty or starts with a number"
             else
-                deleteUser
+                deleteUser $2
             fi
             ;;
         "list")
             showUsersList
             ;;
         "password")
-            if [[ -z $2 || $2 == *[a-zA-z'!'@#\$%^\&*()_+]* ]]
+            if [[ -z $2 || $2 == *[a-zA-z'!'@#\$%^\&*()_+]* || $2 -lt 12 || $2 -gt 24 ]]
             then
-                echo "The password length is not valid"
+                echo "The password length is not valid (Min:12, Max: 24)"
             else
                 generatePassword $2
             fi
