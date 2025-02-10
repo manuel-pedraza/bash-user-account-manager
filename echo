@@ -1,1 +1,0 @@
-uid=1000(manu) gid=1000(manu) groups=1000(manu),4(adm),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),116(netdev),1001(docker)
