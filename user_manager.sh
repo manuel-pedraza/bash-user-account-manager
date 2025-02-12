@@ -6,7 +6,7 @@ PASSWORD=""
 # Functions
 generatePassword() {
     local len=$1
-    echo "Len of pwd: $len"
+    # echo "Len of pwd: $len"
     PASSWORD=$(openssl rand -base64 $len)
     echo "PWD: $PASSWORD"
 }
@@ -30,8 +30,77 @@ addUser () {
     fi
 }
 
+showModifyUserMenu() {
+    
+    local options=("Name [NAME]" "Password [LENGTH]" "Home Directory [PATH]" "Add group [GROUP]" "Remove group [GROUP]" "Back")
+    local width=25
+    local cols=3
+
+    echo "Choose what to change on the user"
+
+    for ((i=0;i<${#options[@]};i++)); do 
+        string="$(($i+1))) ${options[$i]}"
+        printf "%s" "$string"
+        printf "%$(($width-${#string}))s" " "
+        [[ $(((i+1)%$cols)) -eq 0 ]] && echo
+    done
+    echo
+}
+
 modifyUser () {
-    echo ...
+    if id "$1" >/dev/null 2>&1;
+    then
+        while true; 
+        do
+            echo "User to modify: $1"
+            echo "Groups: " 
+            groups $1
+
+            showModifyUserMenu
+
+            read -p '#? ' var
+            IFS=' ' read -r -a arr <<< "$var"
+            clear
+
+            case ${arr[0]} in
+                1)
+                    if id "$name" >/dev/null 2>&1 ;
+                    then
+                        name=""
+                        echo "User alreay exists"
+                    fi
+
+                    if [[ $name == [0-9]* ]]
+                    then
+                        name=""
+                        echo "User can't start with a number"
+                    fi
+                    ;;
+                2)
+                    echo ...
+                    ;;
+                3)
+                    echo ...
+                    ;;
+                4)
+                    echo ...
+                    ;;
+                5)
+                    echo ...
+                    ;;
+                6)
+                    break
+                    ;;
+                *)
+                    echo "Selected option is not valid"
+                    ;;
+            esac
+
+            
+        done
+    else
+        echo "User doesn't exist"
+    fi
 }
 
 deleteUser () {
@@ -102,7 +171,7 @@ showAddUserMenu() {
 }
 
 showMainMenu() {
-    local options=("List Users" "Add User" "Delete User" "Modify User [NAME]" "Quit")
+    local options=("List Users" "Add User" "Delete User [NAME]" "Modify User [NAME]" "Quit")
     local width=25
     local cols=3
 
@@ -123,8 +192,11 @@ then
     while true; do
         showMainMenu
         read -p '#? ' var
+        IFS=' ' read -r -a arr <<< "$var"
         clear
-        case $var in
+        # echo "var: $var"
+        # echo ":"${arr[1]}
+        case ${arr[0]} in
             1)
                 showUsersList
                 ;;
@@ -132,10 +204,10 @@ then
                 showAddUserMenu
                 ;;
             3)
-                echo "Delete User"
+                deleteUser ${arr[1]}
                 ;;
             4)
-                echo "Modify User"
+                modifyUser ${arr[1]}
                 ;;
             5)
                 exit
