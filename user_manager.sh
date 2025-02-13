@@ -30,6 +30,34 @@ addUser () {
     fi
 }
 
+changeName() {
+    local oldName=$1
+    local newName=$2
+    if [ -z $newName ]
+    then
+        echo "User is not valid"
+        return 1
+    fi
+    
+    if id "$newName" >/dev/null 2>&1 ;
+    then
+        newName=""
+        echo "User alreay exists"
+        return 1
+    fi
+    
+    if [[ $newName == [0-9]* ]]
+    then
+        newName=""
+        echo "User can't start with a number"
+        return 1
+    fi
+    
+    usermod -l $newName $oldName
+    groupmod --new-name $newName $oldName
+    return 0
+}
+
 showModifyUserMenu() {
     
     local options=("Name [NAME]" "Password [LENGTH]" "Home Directory [PATH]" "Add group [GROUP]" "Remove group [GROUP]" "Back")
@@ -48,13 +76,14 @@ showModifyUserMenu() {
 }
 
 modifyUser () {
-    if id "$1" >/dev/null 2>&1;
+    local name=$1
+    if id "$name" >/dev/null 2>&1;
     then
         while true; 
         do
-            echo "User to modify: $1"
+            echo "User to modify: $name"
             echo "Groups: " 
-            groups $1
+            groups $name
 
             showModifyUserMenu
 
@@ -64,17 +93,7 @@ modifyUser () {
 
             case ${arr[0]} in
                 1)
-                    if id "$name" >/dev/null 2>&1 ;
-                    then
-                        name=""
-                        echo "User alreay exists"
-                    fi
-
-                    if [[ $name == [0-9]* ]]
-                    then
-                        name=""
-                        echo "User can't start with a number"
-                    fi
+                    changeName $name ${arr[1]} && name=${arr[1]}
                     ;;
                 2)
                     echo ...
@@ -95,7 +114,6 @@ modifyUser () {
                     echo "Selected option is not valid"
                     ;;
             esac
-
             
         done
     else
