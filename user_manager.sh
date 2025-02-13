@@ -118,7 +118,14 @@ modifyUser () {
                     fi
                     ;;
                 4)
-                    echo ...
+                    local allG=${arr[1]}
+                    IFS=', ' read -r -a groups <<< "$allG"
+
+                    for index in "${!groups[@]}"
+                    do 
+                        local g=${groups[$index]}
+                        echo $g
+                    done
                     ;;
                 5)
                     echo ...
@@ -205,7 +212,7 @@ showAddUserMenu() {
 }
 
 showMainMenu() {
-    local options=("List Users" "Add User" "Delete User [NAME]" "Modify User [NAME]" "Quit")
+    local options=("List Users" "Add User" "Delete User [NAME]" "Modify User [NAME]" "Add Group [GROUP]" "Delete Group [GROUP]" "Quit")
     local width=25
     local cols=3
 
@@ -244,6 +251,38 @@ then
                 modifyUser ${arr[1]}
                 ;;
             5)
+                if [[ -z ${arr[1]} ]]
+                then
+                    echo "Group(s) is empty"
+                else
+                    allG=${arr[1]}
+                    IFS=', ' read -r -a groups <<< "$allG"
+
+                    for index in "${!groups[@]}"
+                    do 
+                        g=${groups[$index]}
+                        groupadd $g
+                        echo "Group $g added"
+                    done
+                fi
+                ;;
+            6)
+                if [[ -z ${arr[1]} ]]
+                then
+                    echo "Group(s) is empty"
+                else
+                    allG=${arr[1]}
+                    IFS=', ' read -r -a groups <<< "$allG"
+
+                    for index in "${!groups[@]}"
+                    do 
+                        g=${groups[$index]}
+                        groupdel $g
+                        echo "Group $g deleted"
+                    done
+                fi
+                ;;
+            7)
                 exit
                 ;;
             *)
