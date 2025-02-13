@@ -55,6 +55,7 @@ changeName() {
     
     usermod -l $newName $oldName
     groupmod --new-name $newName $oldName
+    usermod -m -d "/home/$newName" $newName
     return 0
 }
 
@@ -64,7 +65,7 @@ showModifyUserMenu() {
     local width=25
     local cols=3
 
-    echo "Choose what to change on the user"
+    echo "Choose what to change in the user"
 
     for ((i=0;i<${#options[@]};i++)); do 
         string="$(($i+1))) ${options[$i]}"
@@ -82,6 +83,8 @@ modifyUser () {
         while true; 
         do
             echo "User to modify: $name"
+            directory=$( getent passwd "$name" | cut -d: -f6 )
+            echo "Home directory: $directory"
             echo "Groups: " 
             groups $name
 
@@ -96,10 +99,23 @@ modifyUser () {
                     changeName $name ${arr[1]} && name=${arr[1]}
                     ;;
                 2)
-                    echo ...
+                    local lenPwd=${arr[1]}
+                    if [[ -z "$lenPwd" || "$lenPwd" == *[a-zA-z'!'@#\$%^\&*()_+]* || $lenPwd -lt 12 || $lenPwd -gt 24 ]]
+                    then
+                        echo "Password length is not valid (min: 12, max: 24)"
+                    else
+                        generatePassword $lenPwd
+                        echo "$name:$PASSWORD" | sudo chpasswd
+                    fi
                     ;;
                 3)
-                    echo ...
+                    local pathName=${arr[1]}
+                    if [[ -z "$pathName" ]]
+                    then
+                        echo "The new path is empty"
+                    else
+                        usermod -m -d "$pathName" $name
+                    fi
                     ;;
                 4)
                     echo ...
