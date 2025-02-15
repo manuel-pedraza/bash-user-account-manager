@@ -16,8 +16,11 @@ This project is a Bash script that allows system administrators to manage user a
 - **Logging & Security**
   - Logs all user account operations for auditing.
   - Ensures password strength compliance.
+- **Groups Manager**
+  - Creates one or more groups
+  - Deletes one or more groups
   
-## Usage
+## Usage (Standalone Mode)
 ### Adding a New User
 ```bash
 ./user_manager.sh add <username>
@@ -36,7 +39,7 @@ Removes the specified user from the system.
 ```
 Displays a list of all users on the system.
 
-### Generating a Random Password (Standalone Mode)
+### Generating a Random Password 
 ```bash
 ./user_manager.sh password <length>
 ```

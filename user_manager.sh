@@ -124,11 +124,28 @@ modifyUser () {
                     for index in "${!groups[@]}"
                     do 
                         local g=${groups[$index]}
-                        echo $g
+                        if grep -q $g /etc/group
+                        then
+                            usermod -a -G $g $name
+                        else
+                            echo "Group does not exist: $g"
+                        fi
                     done
                     ;;
                 5)
-                    echo ...
+                    local allG=${arr[1]}
+                    IFS=', ' read -r -a groups <<< "$allG"
+
+                    for index in "${!groups[@]}"
+                    do 
+                        local g=${groups[$index]}
+                        if grep -q $g /etc/group
+                        then
+                            gpasswd --delete $name $g
+                        else
+                            echo "Group does not exist: $g"
+                        fi
+                    done
                     ;;
                 6)
                     break
@@ -253,7 +270,7 @@ then
             5)
                 if [[ -z ${arr[1]} ]]
                 then
-                    echo "Group(s) is empty"
+                    echo "Groups field is empty"
                 else
                     allG=${arr[1]}
                     IFS=', ' read -r -a groups <<< "$allG"
@@ -269,7 +286,7 @@ then
             6)
                 if [[ -z ${arr[1]} ]]
                 then
-                    echo "Group(s) is empty"
+                    echo "Groups field is empty"
                 else
                     allG=${arr[1]}
                     IFS=', ' read -r -a groups <<< "$allG"
