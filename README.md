@@ -14,22 +14,31 @@ This project is a Bash script that allows system administrators to manage user a
   - Supports alphanumeric and special characters.
   - Automatically assigns generated passwords to new users.
 - **Logging & Security**
-  - Logs all user account operations for auditing.
+  - Logs all user account operations for auditing in: **/var/log/user_manager.log**.
   - Ensures password strength compliance.
 - **Groups Manager**
-  - Creates one or more groups
-  - Deletes one or more groups
-  
+  - Creates one or more groups.
+  - Deletes one or more groups.
+
+## Usage (App Mode)
+### Start the app
+```bash
+./user_manager.sh
+```
+This will start the app showing you the options to select from.
+
+**NOTE:** An option containing **[]** means that you need to write something after the number to work **( e.g.: 4 John or 5 group1234,test935 )**
+
 ## Usage (Standalone Mode)
 ### Adding a New User
 ```bash
-./user_manager.sh add <username>
+./user_manager.sh add [username]
 ```
 This will create a new user with a randomly generated secure password.
 
 ### Deleting a User
 ```bash
-./user_manager.sh delete <username>
+./user_manager.sh delete [username]
 ```
 Removes the specified user from the system.
 
@@ -41,7 +50,7 @@ Displays a list of all users on the system.
 
 ### Generating a Random Password 
 ```bash
-./user_manager.sh password <length>
+./user_manager.sh password [length]
 ```
 Generates a secure password of the specified length.
 

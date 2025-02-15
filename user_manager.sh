@@ -2,13 +2,29 @@
 
 # Global Vars
 PASSWORD=""
+LOG_FILE="/var/log/user_manager.log"
+
+if [ ! -f $LOG_FILE ]
+then
+    touch  $LOG_FILE
+    chmod 644 $LOG_FILE
+else
+    echo hello
+fi
 
 # Functions
+log_action() {
+    local msg=$1
+    local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "$timestamp - $msg" >> "$LOG_FILE"
+}
+
 generatePassword() {
     local len=$1
     # echo "Len of pwd: $len"
     PASSWORD=$(openssl rand -base64 $len)
     echo "PWD: $PASSWORD"
+    log_action "Password generated successfully"
 }
 
 addUser () {
@@ -27,6 +43,7 @@ addUser () {
         echo "User $1 added"
         generatePassword $lenPwd
         echo "$1:$PASSWORD" | sudo chpasswd
+        log_action "User $1 created"
     fi
 }
 
@@ -56,13 +73,14 @@ changeName() {
     usermod -l $newName $oldName
     groupmod --new-name $newName $oldName
     usermod -m -d "/home/$newName" $newName
+    log_action "Changed name of $oldName to $newName, changed home directory and group name"
     return 0
 }
 
 showModifyUserMenu() {
     
-    local options=("Name [NAME]" "Password [LENGTH]" "Home Directory [PATH]" "Add group [GROUP]" "Remove group [GROUP]" "Back")
-    local width=25
+    local options=("Change name [NAME]" "Change password [LENGTH]" "Home Directory [PATH]" "Add to group(s) [GROUP]" "Remove from group(s) [GROUP]" "Back")
+    local width=30
     local cols=3
 
     echo "Choose what to change in the user"
@@ -106,6 +124,8 @@ modifyUser () {
                     else
                         generatePassword $lenPwd
                         echo "$name:$PASSWORD" | sudo chpasswd
+                        log_action "Changed password for user $name"
+
                     fi
                     ;;
                 3)
@@ -115,6 +135,7 @@ modifyUser () {
                         echo "The new path is empty"
                     else
                         usermod -m -d "$pathName" $name
+                        log_action "Changed home directory for user $name from $directory to $pathName"
                     fi
                     ;;
                 4)
@@ -127,6 +148,7 @@ modifyUser () {
                         if grep -q $g /etc/group
                         then
                             usermod -a -G $g $name
+                            log_action "Added $name to group $g"
                         else
                             echo "Group does not exist: $g"
                         fi
@@ -142,6 +164,7 @@ modifyUser () {
                         if grep -q $g /etc/group
                         then
                             gpasswd --delete $name $g
+                            log_action "Removed $name from group $g"
                         else
                             echo "Group does not exist: $g"
                         fi
@@ -165,7 +188,8 @@ deleteUser () {
     if id "$1" >/dev/null 2>&1;
     then
         userdel -r -f $1
-        echo "User $1 deleted"
+        echo "User $1 deleted" 
+        log_action "User $1 deleted"
     else
         echo "User doesn't exist"
     fi
@@ -229,7 +253,7 @@ showAddUserMenu() {
 }
 
 showMainMenu() {
-    local options=("List Users" "Add User" "Delete User [NAME]" "Modify User [NAME]" "Add Group [GROUP]" "Delete Group [GROUP]" "Quit")
+    local options=("List Users" "Add User" "Delete User [NAME]" "Modify User [NAME]" "Add Group(s) [GROUP]" "Delete Group(s) [GROUP]" "Quit")
     local width=25
     local cols=3
 
@@ -280,6 +304,8 @@ then
                         g=${groups[$index]}
                         groupadd $g
                         echo "Group $g added"
+                        log_action "Group $g created"
+
                     done
                 fi
                 ;;
@@ -296,6 +322,7 @@ then
                         g=${groups[$index]}
                         groupdel $g
                         echo "Group $g deleted"
+                        log_action "Group $g deleted"
                     done
                 fi
                 ;;
